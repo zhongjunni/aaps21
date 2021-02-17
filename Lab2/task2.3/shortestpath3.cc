@@ -2,7 +2,7 @@
 #include <climits>
 #include <cmath>
 #include <cstdio>
-#include <queue>
+#include <vector>
 
 namespace aaps {
 namespace zhoni04 {
@@ -41,7 +41,8 @@ const int kInvalidNode = -1;
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implement Bellman-Fords algorithm for finding the shortest path from a
  * node to all other nodes in a graph where edge weights may be negative.
- * @param graph: The graph, which stores edges of each node.
+ * @param edges: The edges in the graph.
+ * @param n: The count of nodes.
  * @param start: The start node.
  * @param distance: The distance, used for storing the shortest distance of
  * between start node and other node.
