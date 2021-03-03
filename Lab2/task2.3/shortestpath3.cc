@@ -2,87 +2,74 @@
 #include <climits>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <map>
+#include <queue>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace aaps {
 namespace zhoni04 {
 
-using WeightType = long long;
+const int kInfinity = 100000000;
+const int kInvalidNode = -1;
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @class Edge
- * @brief Implements the edge, which consists of source node, destination node,
- * and the weight.
+ * @brief Implements the edge, which consists of 'from' node, 'to' node, and the
+ * weight.
  */
 struct Edge {
- public:
-  /**
-   * @brief Initializes a new instance of edge.
-   * @param s: The source node.
-   * @param d: The destination node.
-   * @param w: The weight.
-   */
-  Edge(int s, int d, WeightType w) {
-    src = s;
-    dst = d;
-    weight = w;
-  }
-
-  int src;
-  int dst;
-  WeightType weight;
+  int from;
+  int to;
+  int weight;
 };
 
-const WeightType kInfinity = 100000001;
-const int kInvalidNode = -1;
+using GraphType = std::vector<std::vector<Edge>>;
+using ResultType = std::pair<std::vector<int>, std::vector<int>>;
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implement Bellman-Fords algorithm for finding the shortest path from a
  * node to all other nodes in a graph where edge weights may be negative.
- * @param edges: The edges in the graph.
- * @param n: The count of nodes.
+ * @param graph: The graph, which stores edges of each node.
  * @param start: The start node.
- * @param distance: The distance, used for storing the shortest distance of
- * between start node and other node.
- * @param parent: The parent, used for storing the parent node of each node.
+ * @return: A pair, the first is the distance vector and the second is the
+ * parent vector.
  */
-void ShortestPath(const std::vector<Edge>& edges, int n, int start,
-                  std::vector<WeightType>* distance,
-                  std::vector<int>* parent = nullptr) {
-  if (distance == nullptr) {
-    return;
-  }
+ResultType ShortestPath(const GraphType& graph, int start) {
+  int n = graph.size();
 
-  distance->resize(n);
-  distance->assign(n, kInfinity);
-  if (parent != nullptr) {
-    parent->resize(n);
-    parent->assign(n, -1);
-  }
+  std::vector<int> distance(n, kInfinity);
+  std::vector<int> parent(n, kInvalidNode);
 
-  (*distance)[start] = 0;
-  if (parent != nullptr) {
-    (*parent)[start] = start;
-  }
+  distance[start] = 0;
+  parent[start] = start;
 
-  int m = edges.size();
   for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      if ((*distance)[edges[j].src] == kInfinity) {
+    bool update = false;
+
+    for (int u = 0; u < n; ++u) {
+      if (distance[u] == kInfinity) {
         continue;
       }
 
-      if ((*distance)[edges[j].src] + edges[j].weight <
-          (*distance)[edges[j].dst]) {
-        (*distance)[edges[j].dst] =
-            std::max(-kInfinity, (*distance)[edges[j].src] + edges[j].weight);
-
-        if (parent != nullptr) {
-          (*parent)[edges[j].dst] = edges[j].src;
+      for (auto& e : graph[u]) {
+        if (distance[e.to] > distance[u] + e.weight) {
+          distance[e.to] = distance[u] + e.weight;
+          parent[e.to] = u;
+          update = true;
         }
       }
+    }
+
+    if (!update) {
+      break;
     }
   }
 
@@ -90,19 +77,21 @@ void ShortestPath(const std::vector<Edge>& edges, int n, int start,
   // as -kInfinity.
   std::vector<bool> is_in_negtive_cycle(n, false);
   for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      if ((*distance)[edges[j].src] == kInfinity) {
+    for (int u = 0; u < n; ++u) {
+      if (distance[u] == kInfinity) {
         continue;
       }
 
-      if (is_in_negtive_cycle[edges[j].src] ||
-          (*distance)[edges[j].src] + edges[j].weight <
-              (*distance)[edges[j].dst]) {
-        is_in_negtive_cycle[edges[j].dst] = true;
-        (*distance)[edges[j].dst] = -kInfinity;
+      for (auto& e : graph[u]) {
+        if (is_in_negtive_cycle[u] || distance[e.to] > distance[u] + e.weight) {
+          is_in_negtive_cycle[e.to] = true;
+          distance[e.to] = -kInfinity;
+        }
       }
     }
   }
+
+  return std::make_pair(distance, parent);
 }
 
 }  // namespace zhoni04
@@ -113,23 +102,22 @@ using namespace aaps::zhoni04;
 
 int main(void) {
   int n, m, q, s;
+  Edge e;
 
   while (scanf("%d %d %d %d", &n, &m, &q, &s) != EOF) {
     if (n == 0 && m == 0 && q == 0 && s == 0) {
       break;
     }
 
-    std::vector<Edge> edges;
+    GraphType graph(n);
 
-    int src, dst;
-    WeightType weight;
     for (int i = 0; i < m; ++i) {
-      scanf("%d %d %lld", &src, &dst, &weight);
-      edges.push_back(Edge(src, dst, weight));
+      scanf("%d %d %d", &e.from, &e.to, &e.weight);
+      graph[e.from].push_back(e);
     }
 
-    std::vector<WeightType> distance(n);
-    ShortestPath(edges, n, s, &distance);
+    auto result = ShortestPath(graph, s);
+    auto& distance = result.first;
 
     int qn;
     for (int i = 0; i < q; ++i) {
@@ -140,7 +128,7 @@ int main(void) {
       } else if (distance[qn] == -kInfinity) {
         printf("-Infinity\n");
       } else {
-        printf("%lld\n", distance[qn]);
+        printf("%d\n", distance[qn]);
       }
     }
 
