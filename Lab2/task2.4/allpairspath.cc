@@ -2,6 +2,14 @@
 #include <climits>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <map>
+#include <queue>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace aaps {
@@ -9,8 +17,9 @@ namespace zhoni04 {
 
 using WeightType = long long;
 using GraphType = std::vector<std::vector<WeightType>>;
+using ResultType = std::vector<std::vector<WeightType>>;
 
-const WeightType kInfinity = 100000001;
+const WeightType kInfinity = 100000000;
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
@@ -20,23 +29,24 @@ const WeightType kInfinity = 100000001;
  * @return The shortest distance between all pairs of nodes, represented by a
  * two-dimensional vector.
  */
-GraphType ShortestPathAllPairs(const GraphType& graph) {
+ResultType ShortestPathAllPairs(const GraphType& graph) {
   int n = graph.size();
 
-  GraphType distance(graph);
+  ResultType distance(graph);
 
   for (int k = 0; k < n; ++k) {
     for (int i = 0; i < n; ++i) {
       for (int j = 0; j < n; ++j) {
-        if (distance[i][k] < kInfinity && distance[k][j] < kInfinity)
+        if (distance[i][k] < kInfinity && distance[k][j] < kInfinity) {
           distance[i][j] =
               std::min(distance[i][j], distance[i][k] + distance[k][j]);
+        }
       }
     }
   }
 
-  // Check negtive cycles, for each node in a negive cycle, assign its distance
-  // as -kInfinity.
+  // Check negtive cycles, for each node in a negive cycle, assign its
+  // distance as -kInfinity.
   std::vector<bool> is_in_negtive_cycle(n, false);
   for (int k = 0; k < n; ++k) {
     for (int i = 0; i < n; ++i) {
@@ -71,7 +81,7 @@ int main(void) {
       break;
     }
 
-    GraphType graph(n, std::vector<WeightType>(n, kInfinity));
+    GraphType graph(n, vector<WeightType>(n, kInfinity));
     for (int i = 0; i < n; ++i) {
       graph[i][i] = 0;
     }
@@ -83,7 +93,7 @@ int main(void) {
       graph[u][v] = std::min(w, graph[u][v]);
     }
 
-    GraphType distance = ShortestPathAllPairs(graph);
+    auto distance = ShortestPathAllPairs(graph);
     for (int i = 0; i < q; ++i) {
       scanf("%d %d", &u, &v);
       if (distance[u][v] == kInfinity) {
