@@ -49,21 +49,22 @@ using ResultType = std::pair<std::pair<WeightType, WeightType>, GraphType>;
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
- * @brief Finds a path from vertex s to vertex t by BFS.
+ * @brief Finds the shortest path from vertex s to vertex t by Dijkstras algorithm.
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
  * @param parent: For storing the edge between a vertex and its parent vertex.
+ * @param potential: For storing the potential of each vertex.
  * @return: True if found a path, otherwise false.
  */
-bool ShortestPath(GraphType& graph, int s, int t, std::vector<Edge*>* parent) {
+bool ShortestPath(GraphType& graph, int s, int t, std::vector<Edge*>* parent,
+                  std::vector<WeightType>* potential) {
   int n = graph.size();
   parent->assign(n, nullptr);
 
   std::vector<WeightType> distance(n, kInfinity);
-  std::vector<bool> found(n, false);
 
-  using DistanceNodePair = std::pair<int, int>;
+  using DistanceNodePair = std::pair<WeightType, int>;
   using MinHeap =
       std::priority_queue<DistanceNodePair, std::vector<DistanceNodePair>,
                           std::greater<DistanceNodePair>>;
@@ -76,20 +77,29 @@ bool ShortestPath(GraphType& graph, int s, int t, std::vector<Edge*>* parent) {
     auto p = heap.top();
     heap.pop();
 
-    int d = p.first;
+    WeightType d = p.first;
     int u = p.second;
 
     if (d > distance[u]) {
       continue;
     }
 
-    found[u] = true;
-
     for (auto& e : graph[u]) {
-      //
-
-      heap.push(std::make_pair(distance[e.to], e.to));
+      if (e.flow < e.capacity &&
+          distance[e.to] > d + e.cost + (*potential)[u] - (*potential)[e.to]) {
+        distance[e.to] = d + e.cost + (*potential)[u] - (*potential)[e.to];
+        (*parent)[e.to] = &e;
+        heap.push(std::make_pair(distance[e.to], e.to));
+      }
     }
+  }
+
+  if (distance[t] != kInfinity) {
+    for (int i = 0; i < n; ++i) {
+      (*potential)[i] = std::min((*potential)[i] + distance[i], kInfinity);
+    }
+
+    return true;
   }
 
   return false;
@@ -109,12 +119,13 @@ bool ShortestPath(GraphType& graph, int s, int t, std::vector<Edge*>* parent) {
 ResultType MaxFlowMinCost(const GraphType& graph, int s, int t) {
   int n = graph.size();
   std::vector<Edge*> parent(n);
+  std::vector<WeightType> potential(n, kInfinity);
 
   WeightType max_flow = 0;
   WeightType min_cost = 0;
   GraphType flow_graph(graph);
 
-  while (ShortestPath(flow_graph, s, t, &parent)) {
+  while (ShortestPath(flow_graph, s, t, &parent, &potential)) {
     WeightType path_flow = kInfinity;
     for (auto e = parent[t]; e != nullptr; e = parent[e->from]) {
       path_flow = std::min(path_flow, e->capacity - e->flow);
@@ -125,10 +136,12 @@ ResultType MaxFlowMinCost(const GraphType& graph, int s, int t) {
     for (auto e = parent[t]; e != nullptr; e = parent[e->from]) {
       e->flow += path_flow;
       flow_graph[e->to][e->rev].flow -= path_flow;
+
+      min_cost += path_flow * e->cost;
     }
   }
 
-  return std::make_pair(max_flow, flow_graph);
+  return std::make_pair(std::make_pair(max_flow, min_cost), flow_graph);
 }
 
 }  // namespace zhoni04
@@ -153,7 +166,7 @@ int main(void) {
   auto result = MaxFlowMinCost(graph, s, t);
   auto& maxflow_mincost = result.first;
 
-  printf("%d %d\n", maxflow_mincost.first, maxflow_mincost.second);
+  printf("%lld %lld\n", maxflow_mincost.first, maxflow_mincost.second);
 
   return 0;
 }
