@@ -49,7 +49,8 @@ using ResultType = std::pair<std::pair<WeightType, WeightType>, GraphType>;
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
- * @brief Finds the shortest path from vertex s to vertex t by Dijkstras algorithm.
+ * @brief Finds the shortest path from vertex s to vertex t by Dijkstras
+ * algorithm.
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
@@ -114,7 +115,8 @@ bool ShortestPath(GraphType& graph, int s, int t, std::vector<Edge*>* parent,
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
- * @return: A pair. The first is the max flow. The second is the flow graph.
+ * @return: A pair. The first are a pair of the max flow and the min cost. The
+ * second is the flow graph.
  */
 ResultType MaxFlowMinCost(const GraphType& graph, int s, int t) {
   int n = graph.size();
