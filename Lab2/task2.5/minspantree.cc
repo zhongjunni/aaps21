@@ -1,6 +1,15 @@
 #include <algorithm>
+#include <climits>
+#include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <map>
+#include <queue>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace aaps {
@@ -97,25 +106,18 @@ class DisjointSet {
 
 using WeightType = long long;
 
+const WeightType kInfinity = 10000000001;
+
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @class Edge
- * @brief Implements the edge, which consists of source node, destination node,
- * and the weight.
+ * @brief Implements the edge, which consists of 'from' node, 'to' node, and the
+ * weight.
  */
 struct Edge {
- public:
-  /**
-   * @brief Initializes a new instance of edge.
-   * @param s: The source node.
-   * @param d: The destination node.
-   * @param w: The weight.
-   */
-  Edge(int s, int d, WeightType w) {
-    src = s;
-    dst = d;
-    weight = w;
-  }
+  int from;
+  int to;
+  WeightType weight;
 
   /**
    * @brief Compares this weight and the other edge's weight.
@@ -124,11 +126,10 @@ struct Edge {
    * false.
    */
   bool operator<(const Edge& other) { return weight < other.weight; }
-
-  int src;
-  int dst;
-  WeightType weight;
 };
+
+using GraphType = std::vector<std::vector<Edge>>;
+using ResultType = std::pair<WeightType, std::vector<Edge>>;
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
@@ -136,32 +137,37 @@ struct Edge {
  * complexity: O((|E|+|V|)·log(|V|)), where |E| is count of edges and |V| is
  * count of vertices.
  * @param edges: The total edges of the original graph.
- * @param mst: The found minimum spanning tree.
- * @param djs: The disjoint set to help judge if we can find the mst.
- * @return: The cost of mst, sum of weight of mst edges.
+ * @return: A pair. The first is the cost of mst, which sum of weight of mst
+ * edges. The second is the edges. If there is no minimum spanning tree, the
+ * cost is -kInfinity.
  */
-WeightType Mst(const std::vector<Edge>& edges, std::vector<Edge>* mst,
-               DisjointSet* djs) {
-  if (mst == nullptr || djs == nullptr) {
-    return 0;
+ResultType Mst(const GraphType& graph) {
+  std::vector<Edge> edges;
+  int n = graph.size();
+  for (int i = 0; i < n; ++i) {
+    for (auto& e : graph[i]) {
+      edges.push_back(e);
+    }
   }
-
-  std::vector<Edge> local_edges(edges);
-  std::sort(local_edges.begin(), local_edges.end());
+  std::sort(edges.begin(), edges.end());
 
   WeightType cost = 0;
-  int n = local_edges.size();
-  for (int i = 0; i < n; ++i) {
-    if (djs->Same(local_edges[i].src, local_edges[i].dst)) {
-      continue;
-    }
+  std::vector<Edge> mst;
+  DisjointSet djs(n);
 
-    cost += local_edges[i].weight;
-    mst->push_back(local_edges[i]);
-    djs->Union(local_edges[i].src, local_edges[i].dst);
+  for (auto& e : edges) {
+    if (!djs.Same(e.from, e.to)) {
+      cost += e.weight;
+      mst.push_back(e);
+      djs.Union(e.from, e.to);
+    }
   }
 
-  return cost;
+  if (djs.Count() != 1) {
+    cost = -kInfinity;
+  }
+
+  return std::make_pair(cost, mst);
 }
 
 }  // namespace zhoni04
@@ -171,10 +177,10 @@ using namespace std;
 using namespace aaps::zhoni04;
 
 bool CompareFunc(const Edge& a, const Edge& b) {
-  if (a.src < b.src) {
+  if (a.from < b.from) {
     return true;
-  } else if (a.src == b.src) {
-    return a.dst < b.dst;
+  } else if (a.from == b.from) {
+    return a.to < b.to;
   }
 
   return false;
@@ -182,33 +188,35 @@ bool CompareFunc(const Edge& a, const Edge& b) {
 
 int main(void) {
   int n, m;
+  int u, v;
+  WeightType w;
+  Edge e;
+
   while (scanf("%d %d", &n, &m) != EOF) {
     if (n == 0 && m == 0) {
       break;
     }
 
-    std::vector<Edge> edges;
-    edges.reserve(m);
-
-    std::vector<Edge> mst;
-    mst.reserve(m);
-
-    DisjointSet djs(n);
-
-    int u, v, w;
+    GraphType graph(n);
     for (int i = 0; i < m; ++i) {
-      scanf("%d %d %d", &u, &v, &w);
-      edges.push_back(Edge(std::min(u, v), std::max(u, v), w));
+      scanf("%d %d %lld", &u, &v, &w);
+      e.from = std::min(u, v);
+      e.to = std::max(u, v);
+      e.weight = w;
+      graph[e.from].push_back(e);
     }
 
-    WeightType cost = Mst(edges, &mst, &djs);
-    if (djs.Count() != 1) {
+    auto result = Mst(graph);
+    auto& cost = result.first;
+    auto& edges = result.second;
+
+    if (cost == -kInfinity) {
       printf("Impossible\n");
     } else {
       printf("%lld\n", cost);
-      std::sort(mst.begin(), mst.end(), CompareFunc);
-      for (auto itr = mst.begin(); itr != mst.end(); ++itr) {
-        printf("%d %d\n", itr->src, itr->dst);
+      std::sort(edges.begin(), edges.end(), CompareFunc);
+      for (auto& e : edges) {
+        printf("%d %d\n", e.from, e.to);
       }
     }
   }
