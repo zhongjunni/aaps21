@@ -1,51 +1,73 @@
 #include <algorithm>
 #include <climits>
+#include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <map>
 #include <queue>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
 namespace aaps {
 namespace zhoni04 {
 
+using WeightType = long long;
+
+const WeightType kInfinity = 1000000001;
+const int kInvalidNode = -1;
+
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
- * @brief Finds a route from vertex s to vertex t by BFS.
- * @param graph: The graph, graph[i][j] means there is a vertex from i to
- * graph[i][j].
+ * @class Edge
+ * @brief Implements the edge, which consists of 'from' node, 'to' node, the
+ * capacity, the flow and 'rev' to help find the reverse edge.
+ */
+struct Edge {
+  Edge(int _from, int _to, WeightType _capacity, WeightType _flow, int _rev)
+      : from(_from), to(_to), capacity(_capacity), flow(_flow), rev(_rev) {}
+
+  int from;
+  int to;
+  WeightType capacity;
+  WeightType flow;
+  int rev;
+};
+
+using GraphType = std::vector<std::vector<Edge>>;
+using ResultType = std::pair<WeightType, GraphType>;
+
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Finds a path from vertex s to vertex t by BFS.
+ * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
- * @param capacity: The capacity, capacity[u][v] stores the capacity for edge u
- * -> v.
- * @param parent: Used for store found route.
- * @return: True if found a route, otherwise false.
+ * @param parent: For storing the edge between a vertex and its parent vertex.
+ * @return: True if found a path, otherwise false.
  */
-bool BFS(const std::vector<std::vector<int>>& graph, int s, int t,
-         const std::vector<std::vector<int>>& capacity,
-         std::vector<int>* parent) {
+bool BFS(GraphType& graph, int s, int t, std::vector<Edge*>* parent) {
   int n = graph.size();
-  std::vector<bool> visited(n, false);
+  parent->assign(n, nullptr);
 
   std::queue<int> unvisited;
   unvisited.push(s);
-  (*parent)[s] = -1;
-  visited[s] = true;
 
   while (!unvisited.empty()) {
     int u = unvisited.front();
     unvisited.pop();
 
-    for (int i = 0; i < graph[u].size(); ++i) {
-      int v = graph[u][i];
-      if (!visited[v] && capacity[u][v] > 0) {
-        (*parent)[v] = u;
-        if (v == t) {
+    for (auto& e : graph[u]) {
+      if ((*parent)[e.to] == nullptr && e.to != s && e.flow < e.capacity) {
+        (*parent)[e.to] = &e;
+        if (e.to == t) {
           return true;
         }
 
-        visited[v] = true;
-        unvisited.push(v);
+        unvisited.push(e.to);
       }
     }
   }
@@ -55,68 +77,35 @@ bool BFS(const std::vector<std::vector<int>>& graph, int s, int t,
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
- * @brief Updates the capacity and flow of each involved edges by given route.
- * @param parent: The route.
- * @param s: The source vertex.
- * @param t: The target (sink) vertex.
- * @param capacity: The capacity, capacity[u][v] stores the capacity for edge u
- * -> v.
- * @param flow: The flow, flow[u][v] stores the flow for edge u -> v.
- * @return: Current added flow.
- */
-int Update(const std::vector<int>& parent, int s, int t,
-           std::vector<std::vector<int>>* capacity,
-           std::vector<std::vector<int>>* flow) {
-  int this_flow = INT_MAX;
-  int v = t;
-  int u;
-  while (v != s) {
-    u = parent[v];
-    this_flow = std::min(this_flow, (*capacity)[u][v]);
-    v = u;
-  }
-
-  v = t;
-  while (v != s) {
-    u = parent[v];
-
-    (*capacity)[u][v] -= this_flow;
-    (*capacity)[v][u] += this_flow;
-
-    (*flow)[u][v] += this_flow;
-    (*flow)[v][u] -= this_flow;
-
-    v = u;
-  }
-
-  return this_flow;
-}
-
-/**
- * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements a function that finds the maximum flow in a flow graph
  * based on Edmonds-Karp algorithm.
- * @param graph: The graph, graph[i][j] means there is a vertex from i to
- * graph[i][j].
+ * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
- * @param capacity: The capacity, capacity[u][v] stores the capacity for edge u
- * -> v.
- * @param flow: The flow, flow[u][v] stores the flow for edge u -> v.
- * @return: The maximum flow.
+ * @return: A pair. The first is the max flow. The second is the flow graph.
  */
-int MaxFlow(const std::vector<std::vector<int>>& graph, int s, int t,
-            std::vector<std::vector<int>>* capacity,
-            std::vector<std::vector<int>>* flow) {
+ResultType MaxFlow(const GraphType& graph, int s, int t) {
   int n = graph.size();
-  std::vector<int> parent(n, -1);
-  int max_flow = 0;
+  std::vector<Edge*> parent(n);
 
-  while (BFS(graph, s, t, *capacity, &parent)) {
-    max_flow += Update(parent, s, t, capacity, flow);
+  WeightType max_flow = 0;
+  GraphType flow_graph(graph);
+
+  while (BFS(flow_graph, s, t, &parent)) {
+    WeightType path_flow = kInfinity;
+    for (auto e = parent[t]; e != nullptr; e = parent[e->from]) {
+      path_flow = std::min(path_flow, e->capacity - e->flow);
+    }
+
+    max_flow += path_flow;
+
+    for (auto e = parent[t]; e != nullptr; e = parent[e->from]) {
+      e->flow += path_flow;
+      flow_graph[e->to][e->rev].flow -= path_flow;
+    }
   }
 
-  return max_flow;
+  return std::make_pair(max_flow, flow_graph);
 }
 
 /**
@@ -125,14 +114,10 @@ int MaxFlow(const std::vector<std::vector<int>>& graph, int s, int t,
  * @param graph: The graph, graph[i][j] means there is a vertex from i to
  * graph[i][j].
  * @param s: The source vertex.
- * @param capacity: The capacity, capacity[u][v] stores the capacity for edge u
- * -> v.
  * @param visited: Used for store found vertexes. If vertex i can be visited,
  * then visited[i] is true; otherwise false.
  */
-void BFS(const std::vector<std::vector<int>>& graph, int s,
-         const std::vector<std::vector<int>>& capacity,
-         std::vector<bool>* visited) {
+void BFS(const GraphType& graph, int s, std::vector<bool>* visited) {
   int n = graph.size();
 
   std::queue<int> unvisited;
@@ -143,11 +128,10 @@ void BFS(const std::vector<std::vector<int>>& graph, int s,
     int u = unvisited.front();
     unvisited.pop();
 
-    for (int i = 0; i < graph[u].size(); ++i) {
-      int v = graph[u][i];
-      if (!(*visited)[v] && capacity[u][v] > 0) {
-        (*visited)[v] = true;
-        unvisited.push(v);
+    for (auto& e : graph[u]) {
+      if (!(*visited)[e.to] && e.flow < e.capacity) {
+        (*visited)[e.to] = true;
+        unvisited.push(e.to);
       }
     }
   }
@@ -158,27 +142,20 @@ void BFS(const std::vector<std::vector<int>>& graph, int s,
  * @brief Implements a function that finds the minimal cut in a flow graph. A
  * minimal cut is a subset U of the nodes V where the sum of the capacities from
  * U to V\U is minimal.
- * @param graph: The graph, graph[i][j] means there is a vertex from i to
- * graph[i][j].
+ * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
- * @param capacity: The capacity, capacity[u][v] stores the capacity for edge u
- * -> v.
  * @return: The subset U of the vertices such that s∈U, t∉U, and the weight of
  * edges from U to V\U is minimized.
  */
-std::vector<int> MinCut(const std::vector<std::vector<int>>& graph, int s,
-                        int t, std::vector<std::vector<int>>* capacity) {
+std::vector<int> MinCut(const GraphType& graph, int s, int t) {
   int n = graph.size();
-  std::vector<std::vector<int>> flow(n, std::vector<int>(n, 0));
-
-  MaxFlow(graph, s, t, capacity, &flow);
+  auto result = MaxFlow(graph, s, t);
 
   std::vector<bool> visited(n, false);
-  BFS(graph, s, *capacity, &visited);
+  BFS(result.second, s, &visited);
 
   std::vector<int> vertices;
-
   for (int i = 0; i < n; ++i) {
     if (visited[i]) {
       vertices.push_back(i);
@@ -192,28 +169,27 @@ std::vector<int> MinCut(const std::vector<std::vector<int>>& graph, int s,
 }  // namespace aaps
 
 using namespace aaps::zhoni04;
+using namespace std;
 
 int main(void) {
   int n, m, s, t;
   scanf("%d %d %d %d", &n, &m, &s, &t);
 
-  std::vector<std::vector<int>> graph(n);
-  std::vector<std::vector<int>> capacity(n, std::vector<int>(n, 0));
+  GraphType graph(n);
 
-  int u, v, w;
+  int u, v;
+  WeightType w;
   for (int i = 0; i < m; ++i) {
-    scanf("%d %d %d", &u, &v, &w);
-    graph[u].push_back(v);
-    graph[v].push_back(u);
-
-    capacity[u][v] = w;
+    scanf("%d %d %lld", &u, &v, &w);
+    graph[u].emplace_back(u, v, w, 0, graph[v].size());
+    graph[v].emplace_back(v, u, 0, 0, graph[u].size() - 1);
   }
 
-  std::vector<int> vertices = MinCut(graph, s, t, &capacity);
+  auto vertices = MinCut(graph, s, t);
 
   printf("%d\n", vertices.size());
-  for (int i = 0; i < vertices.size(); ++i) {
-    printf("%d\n", vertices[i]);
+  for (auto& vertice : vertices) {
+    printf("%d\n", vertice);
   }
 
   return 0;
