@@ -18,73 +18,81 @@
 namespace aaps {
 namespace zhoni04 {
 
-using GraphType = std::vector<std::unordered_set<int>>;
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Since maybe several edges are existed between vertexes, I use multiset
+ * to store the 'to' vertexes.
+ */
+using GraphType = std::vector<std::multiset<int>>;
 using ResultType = std::pair<bool, std::vector<int>>;
 
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Implements an algorithm for finding an Euler path through a graph, if
+ * one exists.
+ * @param graph: The graph.
+ * @return: A pair. The first is a bool value to indicate if found, true if
+ * found, otherwise false. The second is the found path.
+ */
 ResultType EulerianPath(GraphType* graph) {
   int n = graph->size();
   std::vector<int> in_degree(n, 0);
   std::vector<int> out_degree(n, 0);
 
   int edges_num = 0;
+  int start = 0;
   for (int i = 0; i < n; ++i) {
     out_degree[i] = (*graph)[i].size();
+    if (out_degree[i] != 0) {
+      start = i;
+    }
+
     edges_num += out_degree[i];
+
     for (auto& to : (*graph)[i]) {
       ++in_degree[to];
     }
   }
 
-  int in_out_equal_num = 0;
-  int v1 = -1;
-  int v2 = -1;
+  int in_out_degree_not_equal_num = 0;
   for (int i = 0; i < n; ++i) {
-    if (in_degree[i] == out_degree[i]) {
-      ++in_out_equal_num;
-    } else if (in_degree[i] + 1 == out_degree[i]) {
-      v1 = i;
-    } else if (in_degree[i] == out_degree[i] + 1) {
-      v2 = i;
+    if (in_degree[i] + 1 == out_degree[i]) {
+      start = i;
+    }
+
+    if (in_degree[i] != out_degree[i]) {
+      ++in_out_degree_not_equal_num;
     }
   }
 
-  bool find = false;
   std::vector<int> path;
-  if (in_out_equal_num == n && edges_num != 0 ||
-      in_out_equal_num == n - 2 && v1 != -1 && v2 != -1) {
-    find = true;
-  }
-
-  if (!find) {
-    return std::make_pair(find, path);
-  }
-
   std::stack<int> s;
-  int curr = v1 != -1 ? v1 : 0;
-
-  while (curr != -1) {
-    while (!(*graph)[curr].empty()) {
-      s.push(curr);
+  s.push(start);
+  while (!s.empty()) {
+    int curr = s.top();
+    if (!(*graph)[curr].empty()) {
       auto itr = (*graph)[curr].begin();
-      int next = *itr;
+      s.push(*itr);
       (*graph)[curr].erase(itr);
-      curr = next;
-    }
-
-    path.push_back(curr);
-    curr = -1;
-
-    if (!s.empty()) {
-      curr = s.top();
+    } else {
+      path.push_back(curr);
       s.pop();
     }
   }
 
-  if (edges_num + 1 != path.size()) {
-    find = false;
+  bool find = false;
+
+  // A directed graph has an eulerian path if and only if it is connected and
+  // each vertex except 2 have the same in-degree as out-degree, and one of
+  // those 2 vertices has out-degree with one greater than in-degree (this is
+  // the start vertex), and the other vertex has in-degree with one greater than
+  // out-degree (this is the end vertex).
+  if (path.size() == edges_num + 1 &&
+      (in_out_degree_not_equal_num == 0 || in_out_degree_not_equal_num == 2)) {
+    find = true;
+    std::reverse(path.begin(), path.end());
   }
 
-  std::reverse(path.begin(), path.end());
   return std::make_pair(find, path);
 }
 
