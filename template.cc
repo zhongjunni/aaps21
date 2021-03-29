@@ -22,4 +22,7 @@ namespace zhoni04 {}
 using namespace aaps::zhoni04;
 using namespace std;
 
-int main(void) { return 0; }
+int main(void) {
+  ios::sync_with_stdio(false);
+  return 0;
+}
