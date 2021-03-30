@@ -20,87 +20,119 @@ namespace zhoni04 {
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
- * @class Modulo
+ * @class ModularArithmetic
  * @brief Implements a class to support modular arithmetic, i.e. addition,
  * subtraction, multiplication and division (modular inverse) modulo n. The
  * modular inverse is based on Extended Euclidean algorithm:
  * https://cp-algorithms.com/algebra/extended-euclid-algorithm.html
  */
-class Modulo {
+class ModularArithmetic {
   using NumberType = long long;
 
  public:
   /**
-   * @brief Initializes a default new instance of Modulo. Both the number and
-   * the modulus are 0.
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to calculate the value of (a + b) mod m.
+   * @param a: The a.
+   * @param b: The b.
+   * @param m: The m.
+   * @return: The result.
    */
-  Modulo() : number_(0), modulus_(0) {}
+  static NumberType Add(NumberType a, NumberType b, NumberType m) {
+    return Mod(a + b, m);
+  }
 
   /**
-   * @brief Initializes a new instance of Modulo with specified number and
-   * modulus.
-   * @param number: The number.
-   * @param modulus: The modulus.
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to calculate the value of (a - b) mod m.
+   * @param a: The a.
+   * @param b: The b.
+   * @param m: The m.
+   * @return: The result.
    */
-  Modulo(NumberType number, NumberType modulus)
-      : number_(number), modulus_(modulus) {
-    if (modulus_ > 0) {
-      if (number_ < 0) {
-        number_ = number_ % modulus_ + modulus_;
-      } else {
-        number_ = number_ % modulus_;
-      }
-    }
+  static NumberType Subtract(NumberType a, NumberType b, NumberType m) {
+    return Mod(a - b, m);
   }
 
-  Modulo operator+(const Modulo &rhs) {
-    Modulo result(this->number_ + rhs.number_, this->modulus_);
-    return result;
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to calculate the value of (a * b) mod m.
+   * @param a: The a.
+   * @param b: The b.
+   * @param m: The m.
+   * @return: The result.
+   */
+  static NumberType Multiply(NumberType a, NumberType b, NumberType m) {
+    return Mod(a * b, m);
   }
 
-  Modulo operator-(const Modulo &rhs) {
-    Modulo result(this->number_ - rhs.number_, this->modulus_);
-    return result;
-  }
-
-  Modulo operator*(const Modulo &rhs) {
-    Modulo result(this->number_ * rhs.number_, this->modulus_);
-    return result;
-  }
-
-  Modulo operator/(const Modulo &rhs) {
-    auto inverse = rhs.Inverse();
-    Modulo result(this->number_ * inverse.number_, inverse.modulus_);
-    return result;
-  }
-
-  friend std::ostream &operator<<(std::ostream &output, const Modulo &rhs) {
-    if (rhs.modulus_ == 0) {
-      output << "-1";
-    } else {
-      output << rhs.number_;
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to calculate the value of (a*b^-1) mod m. b^-1
+   * is modular inverse of b, if the modular does not exist, return -1.
+   * @param a: The a.
+   * @param b: The b.
+   * @param m: The m.
+   * @return: The result.
+   */
+  static NumberType Divide(NumberType a, NumberType b, NumberType m) {
+    NumberType inversed;
+    if (!ModularInverse(b, m, inversed)) {
+      return -1;
     }
 
-    return output;
+    return Mod(a * inversed, m);
   }
 
- private:
-  Modulo Inverse() const {
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to calculate the value of a mod m.
+   * @param a: The a.
+   * @param m: The m.
+   * @return: The result. If m is less than or equal to 0, return 0 directly. If
+   * a is less than 0, return (a % m + m); otherwise return (a % m).
+   */
+  static NumberType Mod(NumberType a, NumberType m) {
+    if (m <= 0) {
+      return 0;
+    }
+
+    return a < 0 ? (a % m + m) : (a % m);
+  }
+
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to solve the modular multiplicative
+   * inverse x of an integer a and modulo m such that ax = 1 (mod m).
+   * @param a: The a.
+   * @param m: The m.
+   * @return: The modular multiplicative inverse.
+   */
+  static bool ModularInverse(NumberType a, NumberType m, NumberType &res) {
     NumberType x, y;
-    NumberType g = ExtendedGreatestCommonDivisor(number_, modulus_, x, y);
+    NumberType d = ExtendedGcd(a, m, x, y);
 
-    Modulo result;
-    if (g == 1) {
-      x = (x % modulus_ + modulus_) % modulus_;
-      result.number_ = x;
-      result.modulus_ = modulus_;
+    if (d == 1) {
+      res = (x % m + m) % m;
+      return true;
     }
 
-    return result;
+    return false;
   }
 
-  NumberType ExtendedGreatestCommonDivisor(NumberType a, NumberType b,
-                                           NumberType &x, NumberType &y) const {
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implements a function to computes, in addition to the greatest
+   * common divisor (gcd) of integers a and b, also the coefficients of Bézout's
+   * identity, which are integers x and y such that ax + by = gcd(a, b).
+   * @param a: The a.
+   * @param b: The b.
+   * @param x: The x.
+   * @param y: The y.
+   * @return: The greatest common divisor.
+   */
+  static NumberType ExtendedGcd(NumberType a, NumberType b, NumberType &x,
+                                NumberType &y) {
     if (b == 0) {
       x = 1;
       y = 0;
@@ -108,14 +140,11 @@ class Modulo {
     }
 
     NumberType x1, y1;
-    NumberType d = ExtendedGreatestCommonDivisor(b, a % b, x1, y1);
+    NumberType d = ExtendedGcd(b, a % b, x1, y1);
     x = y1;
     y = x1 - y1 * (a / b);
     return d;
   }
-
-  NumberType number_;
-  NumberType modulus_;
 };
 
 }  // namespace zhoni04
@@ -139,24 +168,21 @@ int main(void) {
     char op;
     for (int i = 0; i < t; ++i) {
       cin >> x >> op >> y;
-      Modulo a(x, n);
-      Modulo b(y, n);
-
       switch (op) {
         case '+':
-          cout << a + b << endl;
+          cout << ModularArithmetic::Add(x, y, n) << endl;
           break;
 
         case '-':
-          cout << a - b << endl;
+          cout << ModularArithmetic::Subtract(x, y, n) << endl;
           break;
 
         case '*':
-          cout << a * b << endl;
+          cout << ModularArithmetic::Multiply(x, y, n) << endl;
           break;
 
         case '/':
-          cout << a / b << endl;
+          cout << ModularArithmetic::Divide(x, y, n) << endl;
           break;
 
         default:
