@@ -144,6 +144,67 @@ class ModularArithmetic {
     y = x1 - y1 * (a / b);
     return d;
   }
+
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implement a function to solve x = a (mod n), x = b (mod m) where n
+   * and m are relative prime.
+   * @param a: The a.
+   * @param n: The n.
+   * @param b: The b.
+   * @param m: The m.
+   * @return: The unique solution x such that 0 ≤ x < n · m.
+   */
+  static NumberType ChineseRemainder(NumberType a, NumberType n, NumberType b,
+                                     NumberType m) {
+    // For x = a (mod n), we assume that x = k0 * n + a.
+    // For x = b (mod m), we assume that x = k1 * m + b.
+    // So, k0 * n + a = k1 * m + b, which means k0 * n + (-k1) * m = b - a.
+    // And we also know k2 * n + k3 * m = gcd(n, m) = 1. So we can caculate k2,
+    // k3 firstly, then caculate k0.
+    NumberType k2, k3;
+    ExtendedGcd(n, m, k2, k3);
+
+    NumberType k0 = Mod((b - a) * k2, m);
+    NumberType x = k0 * n + a;
+
+    return Mod(x, n * m);
+  }
+
+  /**
+   * @author Zhongjun Ni (LiU-ID: zhoni04)
+   * @brief Implement a function to solve x = a (mod n), x = b (mod m) where n
+   * and m does not have to be relative prime.
+   * @param a: The a.
+   * @param n: The n.
+   * @param b: The b.
+   * @param m: The m.
+   * @param x: The x.
+   * @param K: The lcm(n,m).
+   * @return: True if there exists solution, otherwise false.
+   */
+  static bool GeneralChineseRemainder(NumberType a, NumberType n, NumberType b,
+                                      NumberType m, NumberType &x,
+                                      NumberType &K) {
+    // For x = a (mod n), we assume that x = k0 * n + a.
+    // For x = b (mod m), we assume that x = k1 * m + b.
+    // So, k0 * n + a = k1 * m + b, which means k0 * n + (-k1) * m = b - a.
+    // And we also know k2 * n + k3 * m = gcd(n, m) = 1. So we can caculate k2,
+    // k3 firstly, then caculate k0.
+    NumberType k2, k3;
+    auto d = ExtendedGcd(n, m, k2, k3);
+    if (Mod(b - a, d) != 0) {
+      return false;
+    }
+
+    NumberType k0 = Mod((b - a) * k2 / d, m);
+    x = k0 * n + a;
+
+    K = (n * m) / d;
+    x = Mod(x, K);
+
+    return true;
+  }
 };
 
 }  // namespace zhoni04
@@ -155,40 +216,19 @@ using namespace std;
 int main(void) {
   ios::sync_with_stdio(false);
 
-  long long n;
-  int t;
+  int T;
+  cin >> T;
 
-  while (cin >> n >> t) {
-    if (n == 0 && t == 0) {
-      break;
-    }
+  long long a, n, b, m;
+  for (int i = 0; i < T; ++i) {
+    cin >> a >> n >> b >> m;
 
-    long long x, y;
-    char op;
-    for (int i = 0; i < t; ++i) {
-      cin >> x >> op >> y;
-      switch (op) {
-        case '+':
-          cout << ModularArithmetic::Add(x, y, n) << endl;
-          break;
-
-        case '-':
-          cout << ModularArithmetic::Subtract(x, y, n) << endl;
-          break;
-
-        case '*':
-          cout << ModularArithmetic::Multiply(x, y, n) << endl;
-          break;
-
-        case '/':
-          cout << ModularArithmetic::Divide(x, y, n) << endl;
-          break;
-
-        default:
-          break;
-      }
+    long long x, K;
+    if (!ModularArithmetic::GeneralChineseRemainder(a, n, b, m, x, K)) {
+      cout << "no solution" << endl;
+    } else {
+      cout << x << " " << K << endl;
     }
   }
-
   return 0;
 }

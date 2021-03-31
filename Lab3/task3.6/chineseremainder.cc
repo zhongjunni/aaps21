@@ -89,15 +89,14 @@ class ModularArithmetic {
    * @brief Implements a function to calculate the value of a mod m.
    * @param a: The a.
    * @param m: The m.
-   * @return: The result. If m is less than or equal to 0, return 0 directly. If
-   * a is less than 0, return (a % m + m); otherwise return (a % m).
+   * @return: The result. If m is less than or equal to 0, return 0 directly.
    */
   static NumberType Mod(NumberType a, NumberType m) {
     if (m <= 0) {
       return 0;
     }
 
-    return a < 0 ? (a % m + m) : (a % m);
+    return (a % m + m) % m;
   }
 
   /**
