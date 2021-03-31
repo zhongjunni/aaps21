@@ -113,7 +113,7 @@ class ModularArithmetic {
     NumberType d = ExtendedGcd(a, m, x, y);
 
     if (d == 1) {
-      res = (x % m + m) % m;
+      res = Mod(x, m);
       return true;
     }
 
@@ -158,7 +158,18 @@ class ModularArithmetic {
    */
   static NumberType ChineseRemainder(NumberType a, NumberType n, NumberType b,
                                      NumberType m) {
-    return -1;
+    // For x = a (mod n), we assume that x = k0 * n + a.
+    // For x = b (mod m), we assume that x = k1 * m + b.
+    // So, k0 * n + a = k1 * m + b, which means k0 * n + (-k1) * m = b - a.
+    // And we also know k2 * n + k3 * m = gcd(n, m) = 1. So we can caculate k2,
+    // k3 firstly, then caculate k0.
+    NumberType k2, k3;
+    ExtendedGcd(n, m, k2, k3);
+
+    NumberType k0 = Mod((b - a) * k2, m);
+    NumberType x = k0 * n + a;
+
+    return Mod(x, n * m);
   }
 };
 

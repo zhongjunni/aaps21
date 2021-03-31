@@ -113,7 +113,7 @@ class ModularArithmetic {
     NumberType d = ExtendedGcd(a, m, x, y);
 
     if (d == 1) {
-      res = (x % m + m) % m;
+      res = Mod(x, m);
       return true;
     }
 
