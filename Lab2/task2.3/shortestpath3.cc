@@ -36,7 +36,10 @@ using ResultType = std::pair<std::vector<int>, std::vector<int>>;
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implement Bellman-Fords algorithm for finding the shortest path from a
- * node to all other nodes in a graph where edge weights may be negative.
+ * node to all other nodes in a graph where edge weights may be negative. Since
+ * there may exist negative cycles, the main loop may iterate V (the number of
+ * nodes) times. So, the time complexity is O(V*E), where V is the total number
+ * of vertex(nodes), and E is the total number of edges.
  * @param graph: The graph, which stores edges of each node.
  * @param start: The start node.
  * @return: A pair, the first is the distance vector and the second is the
