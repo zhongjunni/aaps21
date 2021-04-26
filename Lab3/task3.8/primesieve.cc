@@ -29,7 +29,7 @@ class PrimeSieve {
  public:
   /**
    * @brief Initializes a new instance of PrimeSieve with an argument n to find
-   * all primes that are less than or equal to n.
+   * all primes that are less than or equal to n. Time complexity: O(nloglogn).
    * @param n: The n.
    */
   explicit PrimeSieve(int n)
@@ -56,7 +56,7 @@ class PrimeSieve {
 
   /**
    * @brief Query if the given value is prime. The given value must be between 0
-   * ~ n, otherwise will return false directly.
+   * ~ n, otherwise will return false directly. Time complexity: O(1).
    * @param value: The value.
    * @return: True if the value is prime, otherwise false.
    */
@@ -69,7 +69,8 @@ class PrimeSieve {
   }
 
   /**
-   * @brief Gets the count of prime numbers less than or equal to n.
+   * @brief Gets the count of prime numbers less than or equal to n. Time
+   * complexity: O(1).
    * @return: The count.
    */
   int count() const { return count_; }

@@ -22,7 +22,10 @@ namespace zhoni04 {
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @class RationalNumber
  * @brief Implements a class for rational numbers. This class supports common
- * arithmetic operations, comparison operators, input, and ouput.
+ * arithmetic operations, comparison operators, input, and ouput. After each
+ * operation, we have to find the greatest common divisor of the numerator and
+ * denominator, so the time complexity of each arithmetic operation is
+ * O(log(min(numerator,denominator))).
  */
 class RationalNumber {
   using NumberType = long long;
@@ -111,6 +114,12 @@ class RationalNumber {
   }
 
  private:
+  /**
+   * @brief Computes the greatest common divisor by Euclidean algorithm. Time
+   * complexity: O(log(min(a,b))).
+   * @param numerator: The numerator.
+   * @param denominator: The denominator.
+   */
   NumberType GreatestCommonDivisor(NumberType a, NumberType b) {
     if (b == 0) {
       return a;
