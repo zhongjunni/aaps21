@@ -78,7 +78,10 @@ bool BFS(GraphType& graph, int s, int t, std::vector<Edge*>* parent) {
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements a function that finds the maximum flow in a flow graph
- * based on Edmonds-Karp algorithm.
+ * based on Edmonds-Karp algorithm. The time complexity is O(V*E^2), where V is
+ * the total number of vertex(nodes), and E is the total number of edges.
+ * Detailed proof can be seen here:
+ * https://brilliant.org/wiki/edmonds-karp-algorithm/
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
@@ -141,7 +144,10 @@ void BFS(const GraphType& graph, int s, std::vector<bool>* visited) {
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements a function that finds the minimal cut in a flow graph. A
  * minimal cut is a subset U of the nodes V where the sum of the capacities from
- * U to V\U is minimal.
+ * U to V\U is minimal. The implenmentation is based on max flow algorithm
+ * according to the max-flow min-cut theorem. The time complexity is O(V*E^2),
+ * where V is the total number of vertex(nodes), and E is the total number of
+ * edges.
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.

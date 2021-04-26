@@ -36,7 +36,10 @@ using ResultType = std::pair<std::vector<int>, std::vector<int>>;
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implement Dijkstras algorithm to find the shortest path from one
- * node to all other nodes in a graph with non-negative edge weights.
+ * node to all other nodes in a graph with non-negative edge weights. The graph
+ * is stored by an adjacency list, and I used a min-heap to store path of
+ * undetermined nodes. So the time complexity is O(V + E*logV), where V is the
+ * total number of vertex(nodes), and E is the total number of edges.
  * @param graph: The graph, which stores edges of each node.
  * @param start: The start node.
  * @return: A pair, the first is the distance vector and the second is the

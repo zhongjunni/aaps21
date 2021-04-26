@@ -29,7 +29,9 @@ using ResultType = std::pair<bool, std::vector<int>>;
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements an algorithm for finding an Euler path through a graph, if
- * one exists.
+ * one exists. The graph is stored by an adjacency list, and the time complexity
+ * is O(E + V), where V is the total number of vertex(nodes), and E is the total
+ * number of edges.
  * @param graph: The graph.
  * @return: A pair. The first is a bool value to indicate if found, true if
  * found, otherwise false. The second is the found path.
@@ -39,6 +41,8 @@ ResultType EulerianPath(GraphType* graph) {
   std::vector<int> in_degree(n, 0);
   std::vector<int> out_degree(n, 0);
 
+  // Count out/in degrees of each node by traverse each edge, so for this step,
+  // the time complexity is O(E).
   int edges_num = 0;
   int start = 0;
   for (int i = 0; i < n; ++i) {
@@ -54,6 +58,8 @@ ResultType EulerianPath(GraphType* graph) {
     }
   }
 
+  // Find start node and count the number of nodes which have different in/out
+  // degrees, time complexity O(V).
   int in_out_degree_not_equal_num = 0;
   for (int i = 0; i < n; ++i) {
     if (in_degree[i] + 1 == out_degree[i]) {
@@ -65,6 +71,8 @@ ResultType EulerianPath(GraphType* graph) {
     }
   }
 
+  // Try to find path, in this loop, each edge will be visited at most once, so
+  // the time complexity is O(E).
   std::vector<int> path;
   std::stack<int> s;
   s.push(start);

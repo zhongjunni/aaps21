@@ -50,7 +50,8 @@ using ResultType = std::pair<std::pair<WeightType, WeightType>, GraphType>;
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Finds the shortest path from vertex s to vertex t by Dijkstras
- * algorithm.
+ * algorithm. Time complexity is O(V + E*logV), where V is the total number of
+ * vertex(nodes), and E is the total number of edges.
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.
@@ -111,7 +112,9 @@ bool ShortestPath(GraphType& graph, int s, int t, std::vector<Edge*>* parent,
  * @brief Implements an algorithm for finding the maximum flow with the minimal
  * cost in a graph. This is a generalization of maximum flow where each edge
  * both has a capacity and a cost. The cost of a flow through an edge is the
- * flow multiplied by the cost for that edge.
+ * flow multiplied by the cost for that edge. The shortest path search is based
+ * on the above Dijkstra algorithm, so the time complexity is O(V*E) * O(V + E*logV),
+ * where V is the total number of vertex(nodes), and E is the total number of edges.
  * @param graph: The graph.
  * @param s: The source vertex.
  * @param t: The target (sink) vertex.

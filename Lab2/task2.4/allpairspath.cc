@@ -24,7 +24,9 @@ const WeightType kInfinity = 100000000;
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements Floyd-Warshalls algorithm for finding the shortest distance
- * between all pairs of nodes in a graph with edge weights.
+ * between all pairs of nodes in a graph with edge weights. The graph is stored
+ * by an adjacency matrix. So the time complexity is O(V^3), where V is the
+ * total number of vertex(nodes).
  * @param graph: The graph, which stores weight between all pairs of nodes.
  * @return The shortest distance between all pairs of nodes, represented by a
  * two-dimensional vector.
