@@ -32,7 +32,8 @@ class ModularArithmetic {
  public:
   /**
    * @author Zhongjun Ni (LiU-ID: zhoni04)
-   * @brief Implements a function to calculate the value of (a + b) mod m.
+   * @brief Implements a function to calculate the value of (a + b) mod m. Time
+   * complexity: O(1).
    * @param a: The a.
    * @param b: The b.
    * @param m: The m.
@@ -44,7 +45,8 @@ class ModularArithmetic {
 
   /**
    * @author Zhongjun Ni (LiU-ID: zhoni04)
-   * @brief Implements a function to calculate the value of (a - b) mod m.
+   * @brief Implements a function to calculate the value of (a - b) mod m. Time
+   * complexity: O(1).
    * @param a: The a.
    * @param b: The b.
    * @param m: The m.
@@ -56,7 +58,8 @@ class ModularArithmetic {
 
   /**
    * @author Zhongjun Ni (LiU-ID: zhoni04)
-   * @brief Implements a function to calculate the value of (a * b) mod m.
+   * @brief Implements a function to calculate the value of (a * b) mod m. Time
+   * complexity: O(1).
    * @param a: The a.
    * @param b: The b.
    * @param m: The m.
@@ -69,7 +72,8 @@ class ModularArithmetic {
   /**
    * @author Zhongjun Ni (LiU-ID: zhoni04)
    * @brief Implements a function to calculate the value of (a*b^-1) mod m. b^-1
-   * is modular inverse of b, if the modular does not exist, return -1.
+   * is modular inverse of b, if the modular does not exist, return -1. Time
+   * complexity: O(log(min(b,m))).
    * @param a: The a.
    * @param b: The b.
    * @param m: The m.
@@ -86,7 +90,8 @@ class ModularArithmetic {
 
   /**
    * @author Zhongjun Ni (LiU-ID: zhoni04)
-   * @brief Implements a function to calculate the value of a mod m.
+   * @brief Implements a function to calculate the value of a mod m. Time
+   * complexity: O(1).
    * @param a: The a.
    * @param m: The m.
    * @return: The result. If m is less than or equal to 0, return 0 directly.
@@ -103,6 +108,7 @@ class ModularArithmetic {
    * @author Zhongjun Ni (LiU-ID: zhoni04)
    * @brief Implements a function to solve the modular multiplicative
    * inverse x of an integer a and modulo m such that ax = 1 (mod m).
+   * Time complexity: O(log(min(a,m))).
    * @param a: The a.
    * @param m: The m.
    * @return: The modular multiplicative inverse.
@@ -123,7 +129,8 @@ class ModularArithmetic {
    * @author Zhongjun Ni (LiU-ID: zhoni04)
    * @brief Implements a function to computes, in addition to the greatest
    * common divisor (gcd) of integers a and b, also the coefficients of Bézout's
-   * identity, which are integers x and y such that ax + by = gcd(a, b).
+   * identity, which are integers x and y such that ax + by = gcd(a, b). Time
+   * complexity: O(log(min(a,b))).
    * @param a: The a.
    * @param b: The b.
    * @param x: The x.
