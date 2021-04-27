@@ -158,6 +158,39 @@ class Point {
   T1 y_;
 };
 
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Implements a function to compute the area of a simple polygon by given
+ * points. The definition of a simple polygon can be seen here:
+ * https://cp-algorithms.com/geometry/area-of-simple-polygon.html
+ * Time complexity: O(n), where n is the number of points.
+ * @param points: A list of points to compose the polygon.
+ * @param is_clockwise: A value to indicate if the polygon is given in
+ * clockwise.
+ * @return: The area.
+ */
+template <class T>
+double PolygonArea(const std::vector<Point<T>>& points,
+                   bool* is_clockwise = nullptr) {
+  double result = 0.0;
+  for (int i = 0; i < points.size(); ++i) {
+    auto& curr = points[i];
+    auto& prev = i > 0 ? points[i - 1] : points.back();
+
+    result += (prev.x() - curr.x()) * (prev.y() + curr.y());
+  }
+
+  if (is_clockwise != nullptr) {
+    if (result > 0) {
+      *is_clockwise = false;
+    } else {
+      *is_clockwise = true;
+    }
+  }
+
+  return std::fabs(result) / 2;
+}
+
 }  // namespace zhoni04
 }  // namespace aaps
 
@@ -167,9 +200,32 @@ using namespace std;
 int main(void) {
   ios::sync_with_stdio(false);
 
-  Point<int> p;
-  cin >> p;
-  cout << p.x() << " " << p.y() << endl;
+  fixed(cout);
+  cout.precision(1);
+
+  int n;
+  while (cin >> n) {
+    if (n == 0) {
+      break;
+    }
+
+    vector<Point<int>> points;
+    int x, y;
+    bool is_clockwise = true;
+    for (int i = 0; i < n; ++i) {
+      cin >> x >> y;
+      points.emplace_back(x, y);
+    }
+
+    auto area = PolygonArea(points, &is_clockwise);
+    if (is_clockwise) {
+      cout << "CW ";
+    } else {
+      cout << "CCW ";
+    }
+
+    cout << area << endl;
+  }
 
   return 0;
 }
