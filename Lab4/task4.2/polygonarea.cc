@@ -108,8 +108,17 @@ class Point {
   const T1& y() const { return y_; }
 
   /**
+   * @brief Determines if two points are equal.
+   * @param rhs: The other point.
+   * @return: true if the two points are equal, otherwise false.
+   */
+  bool operator==(const Point& rhs) const {
+    return x_ == rhs.x_ && y_ == rhs.y_;
+  }
+
+  /**
    * @brief Adds two points(vectors).
-   * @param other: The other point.
+   * @param rhs: The other point.
    * @return: The new point.
    */
   Point operator+(const Point& rhs) const {
@@ -118,7 +127,7 @@ class Point {
 
   /**
    * @brief Subtracts two points(vectors).
-   * @param other: The other point.
+   * @param rhs: The other point.
    * @return: The new point.
    */
   Point operator-(const Point& rhs) const {
@@ -127,7 +136,7 @@ class Point {
 
   /**
    * @brief Multiplies a point with a scalar.
-   * @param other: The scalar.
+   * @param scalar: The scalar.
    * @return: The new point.
    */
   template <class T2>
@@ -137,7 +146,7 @@ class Point {
 
   /**
    * @brief Divides a point by a scalar.
-   * @param other: The scalar.
+   * @param scalar: The scalar.
    * @return: The new point.
    */
   template <class T2>

@@ -108,8 +108,17 @@ class Point {
   const T1& y() const { return y_; }
 
   /**
+   * @brief Determines if two points are equal.
+   * @param rhs: The other point.
+   * @return: true if the two points are equal, otherwise false.
+   */
+  bool operator==(const Point& rhs) const {
+    return x_ == rhs.x_ && y_ == rhs.y_;
+  }
+
+  /**
    * @brief Adds two points(vectors).
-   * @param other: The other point.
+   * @param rhs: The other point.
    * @return: The new point.
    */
   Point operator+(const Point& rhs) const {
@@ -118,7 +127,7 @@ class Point {
 
   /**
    * @brief Subtracts two points(vectors).
-   * @param other: The other point.
+   * @param rhs: The other point.
    * @return: The new point.
    */
   Point operator-(const Point& rhs) const {
@@ -127,7 +136,7 @@ class Point {
 
   /**
    * @brief Multiplies a point with a scalar.
-   * @param other: The scalar.
+   * @param scalar: The scalar.
    * @return: The new point.
    */
   template <class T2>
@@ -137,7 +146,7 @@ class Point {
 
   /**
    * @brief Divides a point by a scalar.
-   * @param other: The scalar.
+   * @param scalar: The scalar.
    * @return: The new point.
    */
   template <class T2>
@@ -160,16 +169,71 @@ class Point {
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Implements a function to determine if a point is on a segment. Time
+ * complexity: O(1).
+ * @param a: One end point of the segment.
+ * @param b: Another end point of the segment.
+ * @param point: The point.
+ * @return: true if the point is on the segment, otherwise false.
+ */
+template <class T>
+bool OnSegment(const Point<T>& a, const Point<T>& b, const Point<T>& point) {
+  if (a == point || b == point) {
+    return true;
+  }
+
+  auto pa = a - point;
+  auto pb = b - point;
+  if (pa.Cross(pb) == 0 && pa.Dot(pb) < 0) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements a function to determine whether a point is inside, on the
- * border or outside a simple polygon. Time complexity: O(n), where n is the
- * number of points in the polygon.
+ * border or outside a simple polygon. The function is based on ray casting
+ * algorithm. Time complexity: O(n), where n is the number of points in the
+ * polygon.
  * @param point: The point.
  * @param poly: The polygon.
  * @return: -1 if the point is outside, 0 if the point is on the border, 1 if
  * the point is inside the polygon.
  */
 template <class T>
-int InsidePoly(const Point<T>& point, const std::vector<Point<T>>& poly) {}
+int InsidePoly(const Point<T>& point, const std::vector<Point<T>>& poly) {
+  int result = -2;
+  int left_nodes = 0;
+
+  for (int i = 0; i < poly.size(); ++i) {
+    const auto& curr = poly[i];
+    const auto& prev = i > 0 ? poly[i - 1] : poly.back();
+
+    if (OnSegment(prev, curr, point)) {
+      result = 0;
+      break;
+    }
+
+    if ((curr.y() < point.y() && point.y() <= prev.y()) ||
+        (prev.y() < point.y() && point.y() <= curr.y())) {
+      double intersec_x = curr.x() + (prev.x() - curr.x()) *
+                                         (point.y() - curr.y()) /
+                                         (double)(prev.y() - curr.y());
+
+      if (intersec_x < point.x()) {
+        ++left_nodes;
+      }
+    }
+  }
+
+  if (result != 0) {
+    result = left_nodes % 2 == 0 ? -1 : 1;
+  }
+
+  return result;
+}
 
 }  // namespace zhoni04
 }  // namespace aaps
