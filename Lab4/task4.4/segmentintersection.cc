@@ -175,10 +175,5 @@ using namespace std;
 
 int main(void) {
   ios::sync_with_stdio(false);
-
-  Point<int> p;
-  cin >> p;
-  cout << p.x() << " " << p.y() << endl;
-
   return 0;
 }
