@@ -44,6 +44,12 @@ class Point {
   Point(const T1& x, const T1& y) : x_(x), y_(y) {}
 
   /**
+   * @brief Initializes a new instance of Point by given point.
+   * @param other: The other point.
+   */
+  Point(const Point& other) : x_(other.x_), y_(other.y_) {}
+
+  /**
    * @brief Calculates the dot product of this point(vector) and other
    * point(vector).
    * @param other: The other vector.
@@ -108,12 +114,45 @@ class Point {
   const T1& y() const { return y_; }
 
   /**
+   * @brief Assign the value of other point to this point.
+   * @param rhs: The other point.
+   * @return: this point.
+   */
+  Point& operator=(const Point& rhs) {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    x_ = rhs.x_;
+    y_ = rhs.y_;
+    return *this;
+  }
+
+  /**
    * @brief Determines if two points are equal.
    * @param rhs: The other point.
    * @return: true if the two points are equal, otherwise false.
    */
   bool operator==(const Point& rhs) const {
-    return x_ == rhs.x_ && y_ == rhs.y_;
+    return std::fabs(x_ - rhs.x_) < kEps && std::fabs(y_ - rhs.y_) < kEps;
+  }
+
+  /**
+   * @brief Determines if two points are not equal.
+   * @param rhs: The other point.
+   * @return: true if the two points are not equal, otherwise false.
+   */
+  bool operator!=(const Point& rhs) const { return !(*this == rhs); }
+
+  /**
+   * @brief Determines if this point is on the left of the other point.
+   * @param rhs: The other point.
+   * @return: true if this point is on the left of the other point, otherwise
+   * false.
+   */
+  bool operator<(const Point& rhs) const {
+    return x_ < rhs.x_ - kEps ||
+           (std::fabs(x_ - rhs.x_) < kEps && y_ < rhs.y_ - kEps);
   }
 
   /**
@@ -167,6 +206,137 @@ class Point {
   T1 y_;
 };
 
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @class Point
+ * @brief Implements a template class for representing a line segment. The time
+ * complexity of all operations is O(1).
+ */
+template <class T1>
+class LineSegment {
+ public:
+  /**
+   * @brief Initializes a new instance of LineSegment by given endpoints.
+   * @param start: The start point.
+   * @param end: The end point.
+   */
+  LineSegment(const Point<T1>& start, const Point<T1>& end)
+      : start_(start), end_(end) {
+    if (end_ < start_) {
+      std::swap(start_, end_);
+    }
+
+    a_ = start.y() - end.y();
+    b_ = end.x() - start.x();
+    c_ = -a_ * start.x() - b_ * start.y();
+
+    Norm();
+  }
+
+  /**
+   * @brief Finds the intersection between this line segment and the other line
+   * segment. Time complexity: O(1).
+   * @param other: The other line segment.
+   * @return: The intersection points.
+   */
+  std::vector<Point<double>> Intersect(const LineSegment& other) {
+    std::vector<Point<double>> result;
+
+    // Bounding box check, idea comes from:
+    // https://cp-algorithms.com/geometry/segments-intersection.html
+    if (!Intersect(start_.x(), end_.x(), other.start_.x(), other.end_.x()) ||
+        !Intersect(start_.y(), end_.y(), other.start_.y(), other.end_.y())) {
+      return result;
+    }
+
+    double det = Determinant(a_, b_, other.a_, other.b_);
+    if (std::fabs(det) < kEps) {
+      // This line segment is parallel with the other line segment.
+
+      // Not in same line, so no intersection.
+      if (std::fabs(Distance(other.start_)) > kEps ||
+          std::fabs(other.Distance(start_)) > kEps) {
+        return result;
+      }
+
+      auto left = std::max(start_, other.start_);
+      auto right = std::min(end_, other.end_);
+
+      result.emplace_back(left.x(), left.y());
+
+      if (right != left) {
+        result.emplace_back(right.x(), right.y());
+      }
+
+    } else {
+      double x = -Determinant(c_, b_, other.c_, other.b_) / det;
+      double y = -Determinant(a_, c_, other.a_, other.c_) / det;
+
+      // Avoid -0.00
+      if (std::fabs(x) < kEps) {
+        x = 0;
+      }
+
+      if (std::fabs(y) < kEps) {
+        y = 0;
+      }
+
+      if (Between(start_.x(), end_.x(), x) &&
+          Between(start_.y(), end_.y(), y) &&
+          Between(other.start_.x(), other.end_.x(), x) &&
+          Between(other.start_.y(), other.end_.y(), y)) {
+        result.emplace_back(x, y);
+      }
+    }
+
+    return result;
+  }
+
+ private:
+  void Norm() {
+    double z = std::sqrt(a_ * a_ + b_ * b_);
+    if (std::fabs(z) > kEps) {
+      a_ /= z;
+      b_ /= z;
+      c_ /= z;
+    }
+  }
+
+  bool Intersect(double start1, double end1, double start2, double end2) const {
+    if (start1 > end1) {
+      std::swap(start1, end1);
+    }
+
+    if (start2 > end2) {
+      std::swap(start2, end2);
+    }
+
+    return std::max(start1, start2) <= std::min(end1, end2) + kEps;
+  }
+
+  bool Between(double left, double right, double value) const {
+    return std::min(left, right) <= value + kEps &&
+           value <= std::max(left, right) + kEps;
+  }
+
+  double Distance(const Point<T1>& point) const {
+    return a_ * point.x() + b_ * point.y() + c_;
+  }
+
+  double Determinant(double a, double b, double c, double d) const {
+    return a * d - b * c;
+  }
+
+  const double kEps = 1e-9;
+
+  Point<T1> start_;
+  Point<T1> end_;
+
+  double a_;
+  double b_;
+  double c_;
+};
+
 }  // namespace zhoni04
 }  // namespace aaps
 
@@ -175,5 +345,34 @@ using namespace std;
 
 int main(void) {
   ios::sync_with_stdio(false);
+
+  fixed(cout);
+  cout.precision(2);
+
+  int n;
+  Point<int> p1, p2, p3, p4;
+
+  cin >> n;
+  while (n--) {
+    cin >> p1 >> p2 >> p3 >> p4;
+
+    LineSegment<int> l1(p1, p2), l2(p3, p4);
+    auto intersection = l1.Intersect(l2);
+
+    if (intersection.empty()) {
+      cout << "none";
+    } else {
+      for (int i = 0; i < intersection.size(); ++i) {
+        if (i != 0) {
+          cout << " ";
+        }
+
+        cout << intersection[i].x() << " " << intersection[i].y();
+      }
+    }
+
+    cout << endl;
+  }
+
   return 0;
 }
