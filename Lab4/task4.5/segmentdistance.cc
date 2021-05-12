@@ -254,8 +254,8 @@ class LineSegment {
       // This line segment is parallel with the other line segment.
 
       // Not in same line, so no intersection.
-      if (std::fabs(Distance(other.start_)) > kEps ||
-          std::fabs(other.Distance(start_)) > kEps) {
+      if (std::fabs(DistanceToLine(other.start_)) > kEps ||
+          std::fabs(other.DistanceToLine(start_)) > kEps) {
         return result;
       }
 
@@ -292,6 +292,45 @@ class LineSegment {
     return result;
   }
 
+  /**
+   * @brief Computes the distance between two line segments, i.e., the shortest
+   * distance between any point on the first line segment and any point on the
+   * second line segment. Time complexity: O(1).
+   * @param other: The other line segment.
+   * @return: The distance.
+   */
+  double Distance(const LineSegment& other) {
+    // Has intersection, so the distance is zero.
+    auto intersect = Intersect(other);
+    if (!intersect.empty()) {
+      return 0;
+    }
+
+    double min_dist = 1e9;
+
+    double dist = DistanceToLineSegment(other.start_);
+    if (dist < min_dist) {
+      min_dist = dist;
+    }
+
+    dist = DistanceToLineSegment(other.end_);
+    if (dist < min_dist) {
+      min_dist = dist;
+    }
+
+    dist = other.DistanceToLineSegment(start_);
+    if (dist < min_dist) {
+      min_dist = dist;
+    }
+
+    dist = other.DistanceToLineSegment(end_);
+    if (dist < min_dist) {
+      min_dist = dist;
+    }
+
+    return min_dist;
+  }
+
  private:
   void Norm() {
     double z = std::sqrt(a_ * a_ + b_ * b_);
@@ -319,8 +358,25 @@ class LineSegment {
            value <= std::max(left, right) + kEps;
   }
 
-  double Distance(const Point<T1>& point) const {
+  double DistanceToLine(const Point<T1>& point) const {
     return a_ * point.x() + b_ * point.y() + c_;
+  }
+
+  double DistanceToLineSegment(const Point<T1>& point) const {
+    auto ps = point - start_;
+    if (start_ == end_) {
+      return ps.Length();
+    }
+
+    auto es = end_ - start_;
+    double ratio = (double)ps.Dot(es) / es.Dot(es);
+    if (ratio > 1) {
+      return (point - end_).Length();
+    } else if (ratio < 0) {
+      return ps.Length();
+    } else {
+      return std::fabs(DistanceToLine(point));
+    }
   }
 
   double Determinant(double a, double b, double c, double d) const {
@@ -357,6 +413,7 @@ int main(void) {
     cin >> p1 >> p2 >> p3 >> p4;
 
     LineSegment<int> l1(p1, p2), l2(p3, p4);
+    cout << l1.Distance(l2) << endl;
   }
 
   return 0;
