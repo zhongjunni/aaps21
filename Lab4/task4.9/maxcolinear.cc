@@ -206,6 +206,48 @@ class Point {
   T1 y_;
 };
 
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Implements a method to compute the maximal set of colinear points in a
+ * set of points, i.e., a set of points on the same straight line. Time
+ * complexity is O(n^2).
+ * @param points: A set of points.
+ * @return: The maximal number of points in the set that all points are in the
+ * same line.
+ */
+template <class T>
+int NumberOfColinear(const std::vector<Point<T>>& points) {
+  const double kEps = 1e-9;
+  int max_number = 0;
+  int point_num = points.size();
+
+  for (int i = 0; i < point_num; ++i) {
+    int slope_inf = 1;
+    std::unordered_map<double, int> slopes;
+
+    for (int j = i + 1; j < point_num; ++j) {
+      if (std::fabs(points[j].x() - points[i].x()) < kEps) {
+        // The line is orthogonal to x-axis.
+        ++slope_inf;
+      } else {
+        double slope = (double)(points[j].y() - points[i].y()) /
+                       (points[j].x() - points[i].x());
+        if (slopes.find(slope) == slopes.end()) {
+          slopes[slope] = 2;
+        } else {
+          slopes[slope] += 1;
+        }
+
+        max_number = std::max(max_number, slopes[slope]);
+      }
+    }
+
+    max_number = std::max(max_number, slope_inf);
+  }
+
+  return max_number;
+}
+
 }  // namespace zhoni04
 }  // namespace aaps
 
@@ -214,6 +256,24 @@ using namespace std;
 
 int main(void) {
   ios::sync_with_stdio(false);
+
+  int n;
+  while (cin >> n) {
+    if (n == 0) {
+      break;
+    }
+
+    int x, y;
+    vector<Point<int>> points;
+    points.reserve(n);
+
+    for (int i = 0; i < n; ++i) {
+      cin >> x >> y;
+      points.emplace_back(x, y);
+    }
+
+    cout << NumberOfColinear(points) << endl;
+  }
 
   return 0;
 }
