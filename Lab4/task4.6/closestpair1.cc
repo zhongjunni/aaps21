@@ -206,6 +206,44 @@ class Point {
   T1 y_;
 };
 
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @brief Implements a method for finding a pair of points with minimal distance
+ * in a set of points. Under the assumption that the points are uniformly
+ * distributed in a sub square of R^2, the time complexity is O(n log n).
+ * @param points: A set of points.
+ * @return: The indexes for a pair of points with minimal distance between them.
+ */
+std::vector<int> ClosestPair(std::vector<Point<double>>& points) {
+  std::vector<int> indexes(2, 0);
+  indexes[0] = 0;
+  indexes[1] = 1;
+
+  // First sort the points, time complexity: O(n log n).
+  sort(points.begin(), points.end());
+  double min_dist = (points[1] - points[0]).Length();
+  double dist = 0;
+
+  for (int i = 2; i < points.size(); ++i) {
+    for (int j = i - 1; j >= 0; --j) {
+      dist = (points[i] - points[j]).Length();
+      if (dist < min_dist) {
+        min_dist = dist;
+        indexes[0] = j;
+        indexes[1] = i;
+        continue;
+      }
+
+      // Break inner loop if x diff is larger than current minimal distance.
+      if (points[i].x() - points[j].x() > min_dist) {
+        break;
+      }
+    }
+  }
+
+  return indexes;
+}
+
 }  // namespace zhoni04
 }  // namespace aaps
 
@@ -214,6 +252,29 @@ using namespace std;
 
 int main(void) {
   ios::sync_with_stdio(false);
+
+  fixed(cout);
+  cout.precision(2);
+
+  int n;
+  while (cin >> n) {
+    if (n == 0) {
+      break;
+    }
+
+    double x, y;
+    vector<Point<double>> points;
+    points.reserve(n);
+
+    for (int i = 0; i < n; ++i) {
+      cin >> x >> y;
+      points.emplace_back(x, y);
+    }
+
+    auto indexes = ClosestPair(points);
+    cout << points[indexes[0]].x() << " " << points[indexes[0]].y() << " "
+         << points[indexes[1]].x() << " " << points[indexes[1]].y() << endl;
+  }
 
   return 0;
 }
