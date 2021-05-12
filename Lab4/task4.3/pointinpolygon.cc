@@ -44,6 +44,12 @@ class Point {
   Point(const T1& x, const T1& y) : x_(x), y_(y) {}
 
   /**
+   * @brief Initializes a new instance of Point by given point.
+   * @param other: The other point.
+   */
+  Point(const Point& other) : x_(other.x_), y_(other.y_) {}
+
+  /**
    * @brief Calculates the dot product of this point(vector) and other
    * point(vector).
    * @param other: The other vector.
@@ -108,12 +114,45 @@ class Point {
   const T1& y() const { return y_; }
 
   /**
+   * @brief Assign the value of other point to this point.
+   * @param rhs: The other point.
+   * @return: this point.
+   */
+  Point& operator=(const Point& rhs) {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    x_ = rhs.x_;
+    y_ = rhs.y_;
+    return *this;
+  }
+
+  /**
    * @brief Determines if two points are equal.
    * @param rhs: The other point.
    * @return: true if the two points are equal, otherwise false.
    */
   bool operator==(const Point& rhs) const {
-    return x_ == rhs.x_ && y_ == rhs.y_;
+    return std::fabs(x_ - rhs.x_) < kEps && std::fabs(y_ - rhs.y_) < kEps;
+  }
+
+  /**
+   * @brief Determines if two points are not equal.
+   * @param rhs: The other point.
+   * @return: true if the two points are not equal, otherwise false.
+   */
+  bool operator!=(const Point& rhs) const { return !(*this == rhs); }
+
+  /**
+   * @brief Determines if this point is on the left of the other point.
+   * @param rhs: The other point.
+   * @return: true if this point is on the left of the other point, otherwise
+   * false.
+   */
+  bool operator<(const Point& rhs) const {
+    return x_ < rhs.x_ - kEps ||
+           (std::fabs(x_ - rhs.x_) < kEps && y_ < rhs.y_ - kEps);
   }
 
   /**
