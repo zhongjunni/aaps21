@@ -206,8 +206,108 @@ class Point {
   T1 y_;
 };
 
-bool CompareY(const Point<double>& a, const Point<double>& b) {
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @class PointWrapper
+ * @brief Implements a class for wrappering a point with double coordinates.
+ * Adding a field called index to represent the index of points in a list. The
+ * time complexity of all operations is O(1).
+ */
+class PointWrapper : public Point<double> {
+ public:
+  /**
+   * @brief Initializes a default new instance of PointWrapper.
+   */
+  PointWrapper() : PointWrapper(0, 0, 0) {}
+
+  /**
+   * @brief Initializes a new instance of PointWrapper by given coordinates and
+   * index.
+   * @param x: The value of abscissa.
+   * @param y: The value of ordinate.
+   * @param index: The index.
+   */
+  PointWrapper(double x, double y, int index)
+      : Point<double>(x, y), index_(index) {}
+
+  /**
+   * @brief Gets the index.
+   * @return: The reference.
+   */
+  int& index() { return index_; }
+
+  /**
+   * @brief Gets the index.
+   * @return: The const reference.
+   */
+  const int& index() const { return index_; }
+
+  /**
+   * @brief Assign the value of other point wrapper to this wrapper.
+   * @param rhs: The other point wrapper.
+   * @return: this point wrapper.
+   */
+  PointWrapper& operator=(const PointWrapper& rhs) {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    x() = rhs.x();
+    y() = rhs.y();
+    index_ = rhs.index_;
+    return *this;
+  }
+
+ private:
+  int index_;
+};
+
+/**
+ * @brief Compares two points by their value of ordinate. Time complexity: O(1).
+ * @param a: The point a.
+ * @param b: The point b.
+ * @return: true if a's ordinate is less than b's ordinate, otherwise false.
+ */
+bool CompareY(const PointWrapper& a, const PointWrapper& b) {
   return a.y() < b.y();
+}
+
+std::pair<double, std::vector<int>> BruteForce(
+    const std::vector<PointWrapper>& points) {
+  double min_dist = 1e9;
+  std::vector<int> point_pair(2, 0);
+
+  for (int i = 0; i < points.size(); ++i) {
+    for (int j = i + 1; j < points.size(); ++j) {
+      double dist = (points[j] - points[i]).Length();
+      if (dist < min_dist) {
+        min_dist = dist;
+        point_pair[0] = points[i].index();
+        point_pair[1] = points[j].index();
+      }
+    }
+  }
+
+  return std::make_pair(min_dist, point_pair);
+}
+
+/**
+ * @brief Finds a pair of points with minimal distance in a set of points. Idea
+ * and some codes refer to:
+ * https://cp-algorithms.com/geometry/nearest_points.html Time complexity: O(n *
+ * log n), where n is (right - left).
+ * @param points: A set of points.
+ * @param left: The left bound index (included).
+ * @param right: The right bound index (not included).
+ * @param min_dist: The current minimal distance.
+ * @param indexes: The indexes of a pair of points that have minimal distance.
+ */
+std::pair<double, std::vector<int>> DivideAndConquer(
+    const std::vector<PointWrapper>& points_sort_by_x,
+    const std::vector<PointWrapper>& points_sort_by_y) {
+  if (points_sort_by_x.size() <= 3) {
+    return BruteForce(points_sort_by_x);
+  }
 }
 
 /**
@@ -218,14 +318,7 @@ bool CompareY(const Point<double>& a, const Point<double>& b) {
  * @param points: A set of points.
  * @return: The indexes for a pair of points with minimal distance between them.
  */
-std::vector<int> ClosestPair(std::vector<Point<double>>& points) {
-  double min_dist = 1e9;
-  std::vector<int> indexes(2, 0);
-
-  std::sort(points.begin(), points.end());
-
-  return indexes;
-}
+std::vector<int> ClosestPair(const std::vector<PointWrapper>& points) {}
 
 }  // namespace zhoni04
 }  // namespace aaps
@@ -246,13 +339,17 @@ int main(void) {
     }
 
     double x, y;
-    vector<Point<double>> points;
+    vector<PointWrapper> points;
     points.reserve(n);
 
     for (int i = 0; i < n; ++i) {
       cin >> x >> y;
-      points.emplace_back(x, y);
+      points.emplace_back(x, y, i);
     }
+
+    auto indexes = ClosestPair(points);
+    cout << points[indexes[0]].x() << " " << points[indexes[0]].y() << " "
+         << points[indexes[1]].x() << " " << points[indexes[1]].y() << endl;
   }
 
   return 0;
