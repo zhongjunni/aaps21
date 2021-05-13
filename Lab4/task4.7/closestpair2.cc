@@ -206,6 +206,10 @@ class Point {
   T1 y_;
 };
 
+bool CompareY(const Point<double>& a, const Point<double>& b) {
+  return a.y() < b.y();
+}
+
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements a method based on divide and conquer for finding a pair of
@@ -215,7 +219,10 @@ class Point {
  * @return: The indexes for a pair of points with minimal distance between them.
  */
 std::vector<int> ClosestPair(std::vector<Point<double>>& points) {
+  double min_dist = 1e9;
   std::vector<int> indexes(2, 0);
+
+  std::sort(points.begin(), points.end());
 
   return indexes;
 }
