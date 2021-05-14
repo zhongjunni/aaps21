@@ -208,34 +208,92 @@ class Point {
 
 /**
  * @author Zhongjun Ni (LiU-ID: zhoni04)
+ * @class PointWrapper
+ * @brief Implements a class for wrappering a point with double coordinates.
+ * Adding a field called index to represent the index of points in a list. The
+ * time complexity of all operations is O(1).
+ */
+class PointWrapper : public Point<double> {
+ public:
+  /**
+   * @brief Initializes a default new instance of PointWrapper.
+   */
+  PointWrapper() : PointWrapper(0, 0, 0) {}
+
+  /**
+   * @brief Initializes a new instance of PointWrapper by given coordinates and
+   * index.
+   * @param x: The value of abscissa.
+   * @param y: The value of ordinate.
+   * @param index: The index.
+   */
+  PointWrapper(double x, double y, int index)
+      : Point<double>(x, y), index_(index) {}
+
+  /**
+   * @brief Gets the index.
+   * @return: The reference.
+   */
+  int& index() { return index_; }
+
+  /**
+   * @brief Gets the index.
+   * @return: The const reference.
+   */
+  const int& index() const { return index_; }
+
+  /**
+   * @brief Assign the value of other point wrapper to this wrapper.
+   * @param rhs: The other point wrapper.
+   * @return: this point wrapper.
+   */
+  PointWrapper& operator=(const PointWrapper& rhs) {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    x() = rhs.x();
+    y() = rhs.y();
+    index_ = rhs.index_;
+    return *this;
+  }
+
+ private:
+  int index_;
+};
+
+/**
+ * @author Zhongjun Ni (LiU-ID: zhoni04)
  * @brief Implements a method for finding a pair of points with minimal distance
  * in a set of points. Under the assumption that the points are uniformly
  * distributed in a sub square of R^2, the time complexity is O(n log n).
  * @param points: A set of points.
  * @return: The indexes for a pair of points with minimal distance between them.
  */
-std::vector<int> ClosestPair(std::vector<Point<double>>& points) {
-  std::vector<int> indexes(2, 0);
-  indexes[0] = 0;
-  indexes[1] = 1;
+std::vector<int> ClosestPair(const std::vector<PointWrapper>& points) {
+    // First sort the points, time complexity: O(n log n).
+  std::vector<PointWrapper> sorted_points(points);
+  sort(sorted_points.begin(), sorted_points.end());
 
-  // First sort the points, time complexity: O(n log n).
-  sort(points.begin(), points.end());
-  double min_dist = (points[1] - points[0]).Length();
+  double min_dist = (sorted_points[1] - sorted_points[0]).Length();
+
+  std::vector<int> indexes(2, 0);
+  indexes[0] = sorted_points[1].index();
+  indexes[1] = sorted_points[0].index();
   double dist = 0;
 
-  for (int i = 2; i < points.size(); ++i) {
+  for (int i = 2; i < sorted_points.size(); ++i) {
     for (int j = i - 1; j >= 0; --j) {
-      dist = (points[i] - points[j]).Length();
+      dist = (sorted_points[i] - sorted_points[j]).Length();
       if (dist < min_dist) {
         min_dist = dist;
-        indexes[0] = j;
-        indexes[1] = i;
+        indexes[0] = sorted_points[j].index();
+        indexes[1] = sorted_points[i].index();
         continue;
       }
 
       // Break inner loop if x diff is larger than current minimal distance.
-      if (points[i].x() - points[j].x() > min_dist) {
+      if (sorted_points[i].x() - sorted_points[j].x() > min_dist) {
         break;
       }
     }
@@ -263,12 +321,12 @@ int main(void) {
     }
 
     double x, y;
-    vector<Point<double>> points;
+    vector<PointWrapper> points;
     points.reserve(n);
 
     for (int i = 0; i < n; ++i) {
       cin >> x >> y;
-      points.emplace_back(x, y);
+      points.emplace_back(x, y, i);
     }
 
     auto indexes = ClosestPair(points);
