@@ -272,6 +272,13 @@ bool CompareY(const PointWrapper& a, const PointWrapper& b) {
   return a.y() < b.y();
 }
 
+/**
+ * @brief Finds a pair of points with minimal distance in a set of points. Time
+ * complexity: O(n^2).
+ * @param points: A set of points.
+ * @return: A pair of value, the first is the minimal distance, the second is
+ * the indexes of the pair points.
+ */
 std::pair<double, std::vector<int>> BruteForce(
     const std::vector<PointWrapper>& points) {
   double min_dist = 1e9;
@@ -293,14 +300,13 @@ std::pair<double, std::vector<int>> BruteForce(
 
 /**
  * @brief Finds a pair of points with minimal distance in a set of points. Idea
- * and some codes refer to:
- * https://cp-algorithms.com/geometry/nearest_points.html Time complexity: O(n *
- * log n), where n is (right - left).
- * @param points: A set of points.
- * @param left: The left bound index (included).
- * @param right: The right bound index (not included).
- * @param min_dist: The current minimal distance.
- * @param indexes: The indexes of a pair of points that have minimal distance.
+ * refers to: https://cp-algorithms.com/geometry/nearest_points.html Time
+ * complexity: O(n * log n).
+ * @param points_sort_by_x: A set of points sorted by their value of abscissa.
+ * @param points_sort_by_y: The same set of points sorted by their value of
+ * ordinate.
+ * @return: A pair of value, the first is the minimal distance, the second is
+ * the indexes of the pair points.
  */
 std::pair<double, std::vector<int>> DivideAndConquer(
     const std::vector<PointWrapper>& points_sort_by_x,
